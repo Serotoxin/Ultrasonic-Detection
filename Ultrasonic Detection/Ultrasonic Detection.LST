@@ -1,0 +1,545 @@
+A51 MACRO ASSEMBLER  ULTRASONIC_DETECTION                                                 04/12/2024 11:20:02 PAGE     1
+
+
+MACRO ASSEMBLER A51 V7.07
+OBJECT MODULE PLACED IN Ultrasonic Detection.OBJ
+ASSEMBLER INVOKED BY: C:\Keil\C51\BIN\A51.EXE Ultrasonic Detection.asm SET(SMALL) DEBUG EP
+
+LOC  OBJ            LINE     SOURCE
+
+0000                   1     ORG 0000H
+0000 120600            2     MLOOP:  LCALL LCDINIT
+0003 12050C            3             LCALL SRINIT
+0006 120200            4             LCALL KEY
+0009 120615            5             LCALL LCDBG
+000C 00                6     MLOOP1: NOP
+000D 120513            7             LCALL SRTRIG
+0010 120521            8             LCALL MESURE
+0013 120558            9             LCALL BCDTRS
+                      10     
+0016 7A89             11             MOV R2,#89H
+0018 ED               12             MOV A,R5
+0019 FB               13             MOV R3,A
+001A 120686           14             LCALL LCDSHOW
+                      15     
+001D 7A8A             16             MOV R2,#8AH
+001F EC               17             MOV A,R4
+0020 FB               18             MOV R3,A
+0021 120686           19             LCALL LCDSHOW
+                      20     
+0024 7A8B             21             MOV R2,#8BH
+0026 E9               22             MOV A,R1
+0027 FB               23             MOV R3,A
+0028 120686           24             LCALL LCDSHOW
+                      25     
+002B 7A8C             26             MOV R2,#8CH
+002D E8               27             MOV A,R0
+002E FB               28             MOV R3,A
+002F 120686           29             LCALL LCDSHOW
+                      30     
+0032 120400           31             LCALL BEEP
+0035 120208           32             LCALL STOP
+0038 758C00           33             MOV TH0,#0
+003B 758A00           34             MOV TL0,#0
+003E 120690           35             LCALL LCDANM
+0041 80C9             36             SJMP MLOOP1     
+                      37     
+                      38     
+                      39     
+                      40     
+0200                  41             ORG 0200H
+0200 30B102           42     KEY:    JNB P3.1,OUT ;启动按钮
+0203 80FB             43             SJMP KEY
+                      44     
+0205 D2B0             45     OUT:    SETB P3.0
+0207 22               46             RET
+                      47     
+0208 20B0FA           48     STOP:   JB P3.0,OUT
+020B 80F3             49             SJMP KEY
+020D 22               50             RET
+                      51     
+                      52     
+0300                  53             ORG 0300H ;延时
+0300 7F64             54     DEL10US:MOV R7,#100
+0302 DFFE             55     DEL1:   DJNZ R7,DEL1
+0304 22               56             RET
+                      57     
+0305 7E0A             58     DEL1MS: MOV R6,#10
+A51 MACRO ASSEMBLER  ULTRASONIC_DETECTION                                                 04/12/2024 11:20:02 PAGE     2
+
+0307 120300           59     DEL2:   LCALL DEL10US
+030A DEFB             60             DJNZ R6,DEL2
+030C 22               61             RET
+                      62     
+030D 7D64             63     DEL100MS:MOV R5,#100
+030F 120305           64     DEL3:   LCALL DEL1MS
+0312 DDFB             65             DJNZ R5,DEL3
+0314 22               66             RET     
+                      67     
+                      68     
+0400                  69             ORG 0400H;蜂鸣器条件判断和循环
+0400 E58C             70     BEEP:   MOV A,TH0
+0402 B40100           71             CJNE A,#01H,SHORT
+0405 4013             72     SHORT:  JC SHORTB
+0407 B40600           73             CJNE A,#06H,MIDDLE
+040A 4006             74     MIDDLE: JC MIDDLEB
+040C B41000           75             CJNE A,#10H,LONG
+040F 4005             76     LONG:   JC LONGB
+0411 22               77     OVERRANGE:RET
+                      78     
+0412 120446           79     MIDDLEB:LCALL BEEP2
+0415 22               80             RET
+                      81     
+0416 12047A           82     LONGB:  LCALL BEEP3
+0419 22               83             RET
+                      84     
+041A 12041E           85     SHORTB: LCALL BEEP1
+041D 22               86             RET
+                      87     
+                      88     
+041E 780A             89     BEEP1:  MOV R0,#10
+0420 790A             90             MOV R1,#10
+0422 7A02             91             MOV R2,#2
+                      92             
+0424 00               93     BLOOP:  NOP
+0425 D2A5             94     BLOOP0: SETB P2.5
+0427 120300           95             LCALL DEL10US
+042A C2A5             96             CLR P2.5
+042C 120300           97             LCALL DEL10US
+042F D8F4             98             DJNZ R0,BLOOP0
+                      99     
+0431 D2A5            100     BLOOP1: SETB P2.5
+0433 120300          101             LCALL DEL10US
+0436 120300          102             LCALL DEL10US
+0439 C2A5            103             CLR P2.5
+043B 120300          104             LCALL DEL10US
+043E 120300          105             LCALL DEL10US
+0441 D9EE            106             DJNZ R1,BLOOP1
+                     107     
+0443 DADF            108             DJNZ R2,BLOOP
+0445 22              109             RET
+                     110     
+0446 780A            111     BEEP2:  MOV R0,#10
+0448 790A            112             MOV R1,#10
+044A 7A02            113             MOV R2,#2       
+044C 00              114     BLOOP2: NOP
+                     115     
+044D D2A5            116     BLOOP3: SETB P2.5
+044F 120300          117             LCALL DEL10US
+0452 120300          118             LCALL DEL10US
+0455 C2A5            119             CLR P2.5
+0457 120300          120             LCALL DEL10US
+045A 120300          121             LCALL DEL10US
+045D D8EE            122             DJNZ R0,BLOOP3
+                     123     
+045F D2A5            124     BLOOP4: SETB P2.5
+A51 MACRO ASSEMBLER  ULTRASONIC_DETECTION                                                 04/12/2024 11:20:02 PAGE     3
+
+0461 120300          125             LCALL DEL10US
+0464 120300          126             LCALL DEL10US
+0467 120300          127             LCALL DEL10US
+046A C2A5            128             CLR P2.5
+046C 120300          129             LCALL DEL10US
+046F 120300          130             LCALL DEL10US
+0472 120300          131             LCALL DEL10US
+0475 D9E8            132             DJNZ R1,BLOOP4
+                     133     
+0477 DAD3            134             DJNZ R2,BLOOP2
+0479 22              135             RET
+                     136     
+047A 780A            137     BEEP3:  MOV R0,#10
+047C 790A            138             MOV R1,#10
+047E 7A02            139             MOV R2,#2
+                     140             
+0480 00              141     BLOOP5: NOP
+0481 D2A5            142     BLOOP6: SETB P2.5
+0483 120300          143             LCALL DEL10US
+0486 120300          144             LCALL DEL10US
+0489 120300          145             LCALL DEL10US
+048C 120300          146             LCALL DEL10US
+048F C2A5            147             CLR P2.5
+0491 120300          148             LCALL DEL10US
+0494 120300          149             LCALL DEL10US
+0497 120300          150             LCALL DEL10US
+049A 120300          151             LCALL DEL10US
+049D D8E2            152             DJNZ R0,BLOOP6
+                     153     
+049F D2A5            154     BLOOP7: SETB P2.5
+04A1 120300          155             LCALL DEL10US
+04A4 120300          156             LCALL DEL10US
+04A7 120300          157             LCALL DEL10US
+04AA 120300          158             LCALL DEL10US
+04AD 120300          159             LCALL DEL10US
+04B0 C2A5            160             CLR P2.5
+04B2 120300          161             LCALL DEL10US
+04B5 120300          162             LCALL DEL10US
+04B8 120300          163             LCALL DEL10US
+04BB 120300          164             LCALL DEL10US
+04BE 120300          165             LCALL DEL10US
+04C1 D9DC            166             DJNZ R1,BLOOP7
+04C3 DABB            167             DJNZ R2,BLOOP5
+04C5 22              168             RET
+                     169     
+                     170     
+                     171     
+                     172     
+0500                 173             ORG 0500H;计时器相关计算
+0500 758901          174     TMINIT: MOV TMOD,#01H
+0503 758C00          175             MOV TH0,#0
+0506 758A00          176             MOV TL0,#0
+0509 C28C            177             CLR TR0
+050B 22              178             RET
+                     179                                     
+050C C2A0            180     SRINIT: CLR P2.0
+050E C2A1            181             CLR P2.1
+0510 B100            182             ACALL TMINIT
+0512 22              183             RET
+                     184     
+0513 D2A1            185     SRTRIG: SETB P2.1
+0515 120300          186             LCALL DEL10US
+0518 120300          187             LCALL DEL10US
+051B 120300          188             LCALL DEL10US
+051E C2A1            189             CLR P2.1
+0520 22              190             RET
+A51 MACRO ASSEMBLER  ULTRASONIC_DETECTION                                                 04/12/2024 11:20:02 PAGE     4
+
+                     191     
+0521 30A0FD          192     MESURE: JNB P2.0,MESURE ;这里1.7近似2，除法中不包括任何小数，因为懒
+0524 D28C            193             SETB TR0
+0526 20A0FD          194     X1:     JB P2.0,X1
+0529 C28C            195             CLR TR0
+                     196             ;mov th0,#0FFH
+                     197             ;mov tl0,#0FFH
+052B 7F00            198     CALC:   MOV R7,#0
+052D 308D02          199             JNB TF0,N1
+0530 7F05            200             MOV R7,#5
+0532 E58C            201     N1:     MOV A,TH0;r7代表除完之后的高八位，r6代表低八位
+0534 75F005          202             MOV B,#5
+0537 A4              203             MUL AB
+0538 FD              204             MOV R5,A
+0539 E5F0            205             MOV A,B
+053B 2F              206             ADD A,R7
+053C FF              207             MOV R7,A
+053D ED              208             MOV A,R5
+                     209             
+                     210     
+053E 5006            211             JNC N2
+0540 FD              212             MOV R5,A
+0541 7401            213             MOV A,#1
+0543 2F              214             ADD A,R7
+0544 FF              215             MOV R7,A;高八位配置
+0545 ED              216             MOV A,R5        
+                     217     
+0546 F8              218     N2:     MOV R0,A
+0547 E58A            219             MOV A,TL0       
+0549 5006            220             JNC N3
+054B FD              221             MOV R5,A
+054C 7401            222             MOV A,#1
+054E 2F              223             ADD A,R7
+054F FF              224             MOV R7,A
+0550 ED              225             MOV A,R5;高八位配置完毕
+0551 75F032          226     N3:     MOV B,#50
+0554 84              227             DIV AB  
+0555 28              228             ADD A,R0
+0556 FE              229             MOV R6,A;低八位配置完毕
+0557 22              230             RET
+                     231     
+0558 EE              232     BCDTRS: MOV A,R6;R6R7
+0559 75F00A          233             MOV B,#10
+055C 84              234             DIV AB
+055D A8F0            235             MOV R0,B;个位初值R0
+                     236     
+055F 75F00A          237             MOV B,#10
+0562 84              238             DIV AB
+0563 A9F0            239             MOV R1,B;十位初值R1
+                     240     
+0565 75F00A          241             MOV B,#10
+0568 84              242             DIV AB
+0569 ACF0            243             MOV R4,B;百位初值R4
+                     244                             
+056B EF              245             MOV A,R7
+056C 75F006          246             MOV B,#6
+056F A4              247             MUL AB
+0570 75F00A          248             MOV B,#10
+0573 84              249             DIV AB
+0574 FD              250             MOV R5,A;暂存进位值，下一步修正
+0575 E5F0            251             MOV A,B
+0577 28              252             ADD A,R0;得到一个十位数
+0578 75F00A          253             MOV B,#10
+057B 84              254             DIV AB
+057C A8F0            255             MOV R0,B;真正的个位
+057E 2D              256             ADD A,R5
+A51 MACRO ASSEMBLER  ULTRASONIC_DETECTION                                                 04/12/2024 11:20:02 PAGE     5
+
+057F FD              257             MOV R5,A;下一位进位的所有值
+                     258             
+0580 EF              259             MOV A,R7
+0581 75F005          260             MOV B,#5
+0584 A4              261             MUL AB
+0585 2D              262             ADD A,R5;加上进位位，释放R5
+0586 75F00A          263             MOV B,#10
+0589 84              264             DIV AB
+058A FD              265             MOV R5,A;暂存进位值，下一步修正
+058B E5F0            266             MOV A,B
+058D 29              267             ADD A,R1;得到一个十位数
+058E 75F00A          268             MOV B,#10
+0591 84              269             DIV AB
+0592 A9F0            270             MOV R1,B;真正的十位
+0594 2D              271             ADD A,R5
+0595 FD              272             MOV R5,A;下一位进位的所有值
+                     273     
+0596 EF              274             MOV A,R7
+0597 75F002          275             MOV B,#2
+059A A4              276             MUL AB
+059B 2D              277             ADD A,R5;加上进位位，释放R5
+059C 75F00A          278             MOV B,#10
+059F 84              279             DIV AB
+05A0 FD              280             MOV R5,A;暂存进位值，下一步修正
+05A1 E5F0            281             MOV A,B
+05A3 2C              282             ADD A,R4;得到一个十位数
+05A4 75F00A          283             MOV B,#10
+05A7 84              284             DIV AB
+05A8 ACF0            285             MOV R4,B;真正的百位
+05AA 2D              286             ADD A,R5
+05AB FD              287             MOV R5,A;下一位进位的所有值
+                     288     
+05AC 7430            289             MOV A,#30H
+05AE 2D              290             ADD A,R5
+05AF FD              291             MOV R5,A
+                     292     
+05B0 7430            293             MOV A,#30H
+05B2 2C              294             ADD A,R4
+05B3 FC              295             MOV R4,A
+                     296     
+05B4 7430            297             MOV A,#30H
+05B6 29              298             ADD A,R1
+05B7 F9              299             MOV R1,A
+                     300     
+05B8 7430            301             MOV A,#30H
+05BA 28              302             ADD A,R0
+05BB F8              303             MOV R0,A
+                     304     
+05BC 22              305             RET
+                     306     
+                     307     
+                     308     
+                     309     
+0600                 310             ORG 0600H
+0600 7A38            311     LCDINIT:MOV R2,#38H
+0602 120663          312             LCALL LCDWCM
+0605 7A0C            313             MOV R2,#0CH
+0607 120663          314             LCALL LCDWCM
+060A 7A06            315             MOV R2,#06H
+060C 120663          316             LCALL LCDWCM
+060F 7A01            317             MOV R2,#01H
+0611 120663          318             LCALL LCDWCM
+0614 22              319             RET
+                     320     
+0615 7A80            321     LCDBG:  MOV R2,#80H
+0617 7B44            322             MOV R3,#01000100B;D
+A51 MACRO ASSEMBLER  ULTRASONIC_DETECTION                                                 04/12/2024 11:20:02 PAGE     6
+
+0619 120686          323             LCALL LCDSHOW
+                     324     
+061C 7A81            325             MOV R2,#81H
+061E 7B49            326             MOV R3,#01001001B;I
+0620 120686          327             LCALL LCDSHOW
+                     328     
+0623 7A82            329             MOV R2,#82H
+0625 7B53            330             MOV R3,#01010011B;S
+0627 120686          331             LCALL LCDSHOW
+                     332     
+062A 7A83            333             MOV R2,#83H
+062C 7B54            334             MOV R3,#01010100B;T
+062E 120686          335             LCALL LCDSHOW
+                     336     
+0631 7A84            337             MOV R2,#84H
+0633 7B41            338             MOV R3,#01000001B;A
+0635 120686          339             LCALL LCDSHOW
+                     340     
+0638 7A85            341             MOV R2,#85H
+063A 7B4E            342             MOV R3,#01001110B;N
+063C 120686          343             LCALL LCDSHOW
+                     344     
+063F 7A86            345             MOV R2,#86H
+0641 7B43            346             MOV R3,#01000011B;C
+0643 120686          347             LCALL LCDSHOW
+                     348     
+0646 7A87            349             MOV R2,#87H
+0648 7B45            350             MOV R3,#01000101B;E
+064A 120686          351             LCALL LCDSHOW
+                     352     
+064D 7A88            353             MOV R2,#88H
+064F 7B3A            354             MOV R3,#00111010B;:
+0651 120686          355             LCALL LCDSHOW
+                     356     
+0654 7A8D            357             MOV R2,#8DH
+0656 7B43            358             MOV R3,#01000011B;C
+0658 120686          359             LCALL LCDSHOW
+                     360     
+065B 7A8E            361             MOV R2,#08EH
+065D 7B4D            362             MOV R3,#01001101B;M
+065F 120686          363             LCALL LCDSHOW
+0662 22              364             RET
+                     365     
+0663                 366     LCDJUDG:
+                     367     
+0663 C2A6            368     LCDWCM: CLR P2.6
+0665 C2A5            369             CLR P2.5
+0667 8A80            370             MOV P0,R2
+0669 D2A7            371             SETB P2.7
+066B 120305          372             LCALL DEL1MS
+066E C2A7            373             CLR P2.7
+0670 120305          374             LCALL DEL1MS
+0673 22              375             RET
+                     376     
+0674 00              377     LCDWDATA:NOP
+0675 D2A6            378             SETB P2.6
+0677 C2A5            379             CLR P2.5
+0679 8B80            380             MOV P0,R3
+067B D2A7            381             SETB P2.7  
+067D 120305          382             LCALL DEL1MS
+0680 C2A7            383             CLR P2.7
+0682 120305          384             LCALL DEL1MS
+0685 22              385             RET     
+                     386     
+0686 120663          387     LCDSHOW:LCALL LCDWCM
+0689 120305          388             LCALL DEL1MS
+A51 MACRO ASSEMBLER  ULTRASONIC_DETECTION                                                 04/12/2024 11:20:02 PAGE     7
+
+068C 120674          389             LCALL LCDWDATA
+068F 22              390             RET
+                     391     
+                     392     
+0690 7AC0            393     LCDANM: MOV R2,#0C0H
+0692 7B44            394             MOV R3,#01000100B;D
+0694 120686          395             LCALL LCDSHOW
+0697 7AC1            396             MOV R2,#0C1H
+0699 7B45            397             MOV R3,#01000101B;E
+069B 120686          398             LCALL LCDSHOW
+069E 7AC2            399             MOV R2,#0C2H
+06A0 7B54            400             MOV R3,#01010100B;T
+06A2 120686          401             LCALL LCDSHOW
+06A5 7AC3            402             MOV R2,#0C3H
+06A7 7B45            403             MOV R3,#01000101B;E
+06A9 120686          404             LCALL LCDSHOW
+06AC 7AC4            405             MOV R2,#0C4H
+06AE 7B43            406             MOV R3,#01000011B;C
+06B0 120686          407             LCALL LCDSHOW
+06B3 7AC5            408             MOV R2,#0C5H
+06B5 7B54            409             MOV R3,#01010100B;T
+06B7 120686          410             LCALL LCDSHOW
+06BA 7AC6            411             MOV R2,#0C6H
+06BC 7B49            412             MOV R3,#01001001B;I
+06BE 120686          413             LCALL LCDSHOW
+06C1 7AC7            414             MOV R2,#0C7H
+06C3 7B4E            415             MOV R3,#01001110B;N
+06C5 120686          416             LCALL LCDSHOW
+06C8 7AC8            417             MOV R2,#0C8H
+06CA 7B47            418             MOV R3,#01000111B;G
+06CC 120686          419             LCALL LCDSHOW
+06CF 12030D          420             LCALL DEL100MS
+06D2 7AC0            421             MOV R2,#0C0H
+06D4 7B20            422             MOV R3,#00100000B;D
+06D6 120686          423             LCALL LCDSHOW
+06D9 7AC1            424             MOV R2,#0C1H
+06DB 7B20            425             MOV R3,#00100000B;E
+06DD 120686          426             LCALL LCDSHOW
+06E0 7AC2            427             MOV R2,#0C2H
+06E2 7B20            428             MOV R3,#00100000B;T
+06E4 120686          429             LCALL LCDSHOW
+06E7 7AC3            430             MOV R2,#0C3H
+06E9 7B20            431             MOV R3,#00100000B;E
+06EB 120686          432             LCALL LCDSHOW
+06EE 7AC4            433             MOV R2,#0C4H
+06F0 7B20            434             MOV R3,#00100000B;C
+06F2 120686          435             LCALL LCDSHOW
+06F5 7AC5            436             MOV R2,#0C5H
+06F7 7B20            437             MOV R3,#00100000B;T
+06F9 120686          438             LCALL LCDSHOW
+06FC 7AC6            439             MOV R2,#0C6H
+06FE 7B20            440             MOV R3,#00100000B;I
+0700 120686          441             LCALL LCDSHOW
+0703 7AC7            442             MOV R2,#0C7H
+0705 7B20            443             MOV R3,#00100000B;N
+0707 120686          444             LCALL LCDSHOW
+070A 7AC8            445             MOV R2,#0C8H
+070C 7B20            446             MOV R3,#00100000B;G
+070E 120686          447             LCALL LCDSHOW
+0711 22              448             RET
+                     449     
+                     450             END
+                             
+A51 MACRO ASSEMBLER  ULTRASONIC_DETECTION                                                 04/12/2024 11:20:02 PAGE     8
+
+SYMBOL TABLE LISTING
+------ ----- -------
+
+
+N A M E             T Y P E  V A L U E   ATTRIBUTES
+
+B. . . . . . . . .  D ADDR   00F0H   A   
+BCDTRS . . . . . .  C ADDR   0558H   A   
+BEEP . . . . . . .  C ADDR   0400H   A   
+BEEP1. . . . . . .  C ADDR   041EH   A   
+BEEP2. . . . . . .  C ADDR   0446H   A   
+BEEP3. . . . . . .  C ADDR   047AH   A   
+BLOOP. . . . . . .  C ADDR   0424H   A   
+BLOOP0 . . . . . .  C ADDR   0425H   A   
+BLOOP1 . . . . . .  C ADDR   0431H   A   
+BLOOP2 . . . . . .  C ADDR   044CH   A   
+BLOOP3 . . . . . .  C ADDR   044DH   A   
+BLOOP4 . . . . . .  C ADDR   045FH   A   
+BLOOP5 . . . . . .  C ADDR   0480H   A   
+BLOOP6 . . . . . .  C ADDR   0481H   A   
+BLOOP7 . . . . . .  C ADDR   049FH   A   
+CALC . . . . . . .  C ADDR   052BH   A   
+DEL1 . . . . . . .  C ADDR   0302H   A   
+DEL100MS . . . . .  C ADDR   030DH   A   
+DEL10US. . . . . .  C ADDR   0300H   A   
+DEL1MS . . . . . .  C ADDR   0305H   A   
+DEL2 . . . . . . .  C ADDR   0307H   A   
+DEL3 . . . . . . .  C ADDR   030FH   A   
+KEY. . . . . . . .  C ADDR   0200H   A   
+LCDANM . . . . . .  C ADDR   0690H   A   
+LCDBG. . . . . . .  C ADDR   0615H   A   
+LCDINIT. . . . . .  C ADDR   0600H   A   
+LCDJUDG. . . . . .  C ADDR   0663H   A   
+LCDSHOW. . . . . .  C ADDR   0686H   A   
+LCDWCM . . . . . .  C ADDR   0663H   A   
+LCDWDATA . . . . .  C ADDR   0674H   A   
+LONG . . . . . . .  C ADDR   040FH   A   
+LONGB. . . . . . .  C ADDR   0416H   A   
+MESURE . . . . . .  C ADDR   0521H   A   
+MIDDLE . . . . . .  C ADDR   040AH   A   
+MIDDLEB. . . . . .  C ADDR   0412H   A   
+MLOOP. . . . . . .  C ADDR   0000H   A   
+MLOOP1 . . . . . .  C ADDR   000CH   A   
+N1 . . . . . . . .  C ADDR   0532H   A   
+N2 . . . . . . . .  C ADDR   0546H   A   
+N3 . . . . . . . .  C ADDR   0551H   A   
+OUT. . . . . . . .  C ADDR   0205H   A   
+OVERRANGE. . . . .  C ADDR   0411H   A   
+P0 . . . . . . . .  D ADDR   0080H   A   
+P2 . . . . . . . .  D ADDR   00A0H   A   
+P3 . . . . . . . .  D ADDR   00B0H   A   
+SHORT. . . . . . .  C ADDR   0405H   A   
+SHORTB . . . . . .  C ADDR   041AH   A   
+SRINIT . . . . . .  C ADDR   050CH   A   
+SRTRIG . . . . . .  C ADDR   0513H   A   
+STOP . . . . . . .  C ADDR   0208H   A   
+TF0. . . . . . . .  B ADDR   0088H.5 A   
+TH0. . . . . . . .  D ADDR   008CH   A   
+TL0. . . . . . . .  D ADDR   008AH   A   
+TMINIT . . . . . .  C ADDR   0500H   A   
+TMOD . . . . . . .  D ADDR   0089H   A   
+TR0. . . . . . . .  B ADDR   0088H.4 A   
+X1 . . . . . . . .  C ADDR   0526H   A   
+
+
+REGISTER BANK(S) USED: 0 
+A51 MACRO ASSEMBLER  ULTRASONIC_DETECTION                                                 04/12/2024 11:20:02 PAGE     9
+
+
+
+ASSEMBLY COMPLETE.  0 WARNING(S), 0 ERROR(S)
